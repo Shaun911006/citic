@@ -12,9 +12,7 @@
         "ext-libxml": "*",
         "ext-json": "*",
         "ext-simplexml": "*",
-        "ext-curl": "*",
-        "ext-mbstring": "*",
-        "ext-iconv": "*"
+        "ext-curl": "*"
     },
     "autoload":{
 	"psr-4" :{

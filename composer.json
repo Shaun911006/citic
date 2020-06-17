@@ -1,0 +1,25 @@
+{
+    "name": "shaun/citic",
+    "description": "中信银行接口",
+    "authors": [
+        {
+            "name": "Shaun Yang",
+            "email": "870585669@qq.com"
+        }
+    ],
+    "require": {
+    	"php": ">=7.4.6",
+        "ext-libxml": "*",
+        "ext-json": "*",
+        "ext-simplexml": "*",
+        "ext-curl": "*",
+        "ext-mbstring": "*",
+        "ext-iconv": "*"
+    },
+    "autoload":{
+	"psr-4" :{
+		"citic\\":"src/"
+	}
+    },
+    "license":"MIT"
+}

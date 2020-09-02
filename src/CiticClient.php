@@ -56,6 +56,61 @@ class CiticClient
     }
 
     /**
+     * 银联快付经办
+     * @param $clientID
+     * @param $money
+     * @param $recAccountNo
+     * @param $recAccountName
+     * @param $recOpenBankName
+     * @param string $recOpenBankCode
+     * @param string $remark
+     * @return array
+     */
+    public function pay($clientID, $money, $recAccountNo, $recAccountName,$recOpenBankName ,$recOpenBankCode = '',$remark = '转账')
+    {
+        if ($recOpenBankCode == '99'){
+            $payType = 2; //行内转账
+            $recOpenBankName = '';
+            $recOpenBankCode = '';
+        }else{
+            $payType = 1; //跨行转账
+            if ($recOpenBankName == '' && $recOpenBankCode==''){
+                return [
+                    'res' => false,
+                    'msg' => '收款账号开户行名与收款账号开户行联行网点号至少输一项',
+                    'data' => []
+                ];
+            }
+        }
+
+        $remark      = $remark === '' ? '转账' : $remark;
+        $requestData = [
+            'action' => 'DLINTTRN',
+            'userName' => $this->userName,
+            'list' => [
+                'row' => [
+                    'clientID' => $clientID,
+                    'preFlg' => 0,
+                    'preDate' => '',
+                    'preTime' => '',
+                    'payType' => $payType,
+                    'payFlg' => 1,
+                    'payAccountNo' => $this->payAccountNo,
+                    'recAccountNo' => $recAccountNo,
+                    'recAccountName' => $recAccountName,
+                    'recOpenBankName' => $recOpenBankName,
+                    'recOpenBankCode' => $recOpenBankCode,
+                    'tranAmount' => $money,
+                    'abstract' => $remark,
+                    'memo' => $remark,
+                    'chkNum' => $clientID,
+                ]
+            ]
+        ];
+        return $this->getResult($this->sendRequest($requestData));
+    }
+
+    /**
      * 银联快付明细查询
      * @param $clientID
      * @return array
@@ -72,9 +127,25 @@ class CiticClient
         return $this->getResult($this->sendRequest($requestData));
     }
 
+    /**
+     * 银联快付明细查询
+     * @param $clientID
+     * @return array
+     */
+    public function query($clientID)
+    {
+        $requestData = [
+            'action' => 'DLCIDSTT',
+            'userName' => $this->userName,
+            'clientID' => $clientID,
+            'type' => '',
+        ];
+        return $this->getResult($this->sendRequest($requestData));
+    }
+
     private function sendRequest($requestData)
     {
-        self::log(json_encode($requestData, JSON_UNESCAPED_UNICODE));
+        self::log(json_encode($requestData, JSON_UNESCAPED_UNICODE),1);
         $requestData = XmlTools::encode($requestData, 'GBK', true);
         $requestData = CharsetTools::utf8ToGbk($requestData);
         $res         = HttpTools::post_curls($this->clientUrl, $requestData);
@@ -83,6 +154,7 @@ class CiticClient
 
     private function getResult($res)
     {
+        self::log(json_encode($res, JSON_UNESCAPED_UNICODE),2);
         return [
             'res' => (isset($res['status']) && $res['status'] === 'AAAAAAA') ? true : false,
             'msg' => isset($res['statusText']) ? $res['statusText'] : '',
@@ -90,8 +162,8 @@ class CiticClient
         ];
     }
 
-    public static function log($content)
+    public static function log($content,$type = 1)
     {
-        file_put_contents('./citic.log',$content . PHP_EOL, FILE_APPEND);
+        file_put_contents('./citic'.$type.'.log',$content . PHP_EOL, FILE_APPEND);
     }
 }

@@ -8,7 +8,7 @@
         }
     ],
     "require": {
-    	"php": ">=7.4.6",
+    	"php": ">=7.4.3",
         "ext-libxml": "*",
         "ext-json": "*",
         "ext-simplexml": "*",

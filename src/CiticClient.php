@@ -45,7 +45,7 @@ class CiticClient
             'abstract' => $remark,
             'list' => [
                 'row' => [
-                    'ID' => '00001',
+                    'ID' => '99999',
                     'recAccountNo' => $recAccountNo,
                     'recAccountName' => $recAccountName,
                     'recBankCode' => $recBankCode,

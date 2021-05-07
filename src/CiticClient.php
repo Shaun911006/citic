@@ -27,11 +27,11 @@ class CiticClient
      * @param $money
      * @param $recAccountNo
      * @param $recAccountName
-     * @param $recBankCode
      * @param $remark
+     * @param $recBankCode
      * @return array
      */
-    public function payByUnionPay($clientID, $money, $recAccountNo, $recAccountName,$recBankCode = '', $remark = '转账')
+    public function payByUnionPay($clientID, $money, $recAccountNo, $recAccountName, $remark = '转账', $recBankCode = '')
     {
         $remark      = $remark === '' ? '转账' : $remark;
         $requestData = [
@@ -78,7 +78,7 @@ class CiticClient
      * @param $date
      * @return array
      */
-    public function getBankCode($bankName,$provinceName = '',$cityName = '')
+    public function getBankCode($bankName, $provinceName = '', $cityName = '')
     {
         $requestData = [
             'action' => 'DLBNKCOD',
@@ -101,15 +101,15 @@ class CiticClient
      * @param string $remark
      * @return array
      */
-    public function pay($clientID, $money, $recAccountNo, $recAccountName,$recOpenBankName ,$recOpenBankCode = '',$remark = '转账')
+    public function pay($clientID, $money, $recAccountNo, $recAccountName, $recOpenBankName, $recOpenBankCode = '', $remark = '转账')
     {
-        if ($recOpenBankCode == '99'){
-            $payType = 2; //行内转账
+        if ($recOpenBankCode == '99') {
+            $payType         = 2; //行内转账
             $recOpenBankName = '';
             $recOpenBankCode = '';
-        }else{
+        } else {
             $payType = 1; //跨行转账
-            if ($recOpenBankName == '' && $recOpenBankCode==''){
+            if ($recOpenBankName == '' && $recOpenBankCode == '') {
                 return [
                     'res' => false,
                     'msg' => '收款账号开户行名与收款账号开户行联行网点号至少输一项',
@@ -180,7 +180,7 @@ class CiticClient
 
     private function sendRequest($requestData)
     {
-        self::log(json_encode($requestData, JSON_UNESCAPED_UNICODE),1);
+        self::log(json_encode($requestData, JSON_UNESCAPED_UNICODE), 1);
         $requestData = XmlTools::encode($requestData, 'GBK', true);
         $requestData = CharsetTools::utf8ToGbk($requestData);
         $res         = HttpTools::post_curls($this->clientUrl, $requestData);
@@ -189,7 +189,7 @@ class CiticClient
 
     private function getResult($res)
     {
-        self::log(json_encode($res, JSON_UNESCAPED_UNICODE),2);
+        self::log(json_encode($res, JSON_UNESCAPED_UNICODE), 2);
         return [
             'res' => (isset($res['status']) && $res['status'] === 'AAAAAAA') ? true : false,
             'msg' => isset($res['statusText']) ? $res['statusText'] : '',
@@ -197,8 +197,8 @@ class CiticClient
         ];
     }
 
-    public static function log($content,$type = 1)
+    public static function log($content, $type = 1)
     {
-        file_put_contents('./citic'.$type.'.log',$content . PHP_EOL, FILE_APPEND);
+        file_put_contents('./citic' . $type . '.log', $content . PHP_EOL, FILE_APPEND);
     }
 }

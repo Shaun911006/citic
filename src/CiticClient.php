@@ -72,6 +72,23 @@ class CiticClient
     }
 
     /**
+     * 3.14.3 支付联行信息查询
+     * @param $date
+     * @return array
+     */
+    public function getBankCode($bankName,$provinceName = '',$cityName = '')
+    {
+        $requestData = [
+            'action' => 'DLBNKCOD',
+            'userName' => $this->userName,
+            'provinceName' => $provinceName,
+            'cityName' => $cityName,
+            'tgname' => $bankName,
+        ];
+        return $this->getResult($this->sendRequest($requestData));
+    }
+
+    /**
      * 支付转账
      * @param $clientID
      * @param $money

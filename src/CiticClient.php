@@ -27,10 +27,11 @@ class CiticClient
      * @param $money
      * @param $recAccountNo
      * @param $recAccountName
-     * @param string $remark
+     * @param $recBankCode
+     * @param $remark
      * @return array
      */
-    public function payByUnionPay($clientID, $money, $recAccountNo, $recAccountName, $remark = '转账')
+    public function payByUnionPay($clientID, $money, $recAccountNo, $recAccountName,$recBankCode = '', $remark = '转账')
     {
         $remark      = $remark === '' ? '转账' : $remark;
         $requestData = [
@@ -47,6 +48,7 @@ class CiticClient
                     'ID' => '00001',
                     'recAccountNo' => $recAccountNo,
                     'recAccountName' => $recAccountName,
+                    'recBankCode' => $recBankCode,
                     'tranAmount' => $money,
                     'abstract' => $remark,
                 ]

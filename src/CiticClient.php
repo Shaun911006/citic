@@ -199,6 +199,6 @@ class CiticClient
 
     public static function log($content, $type = 1)
     {
-        file_put_contents('./citic' . $type . '.log', $content . PHP_EOL, FILE_APPEND);
+        file_put_contents('./citic' . $type . '.log', '[' . date('Ymd-His') . ']' . $content . PHP_EOL, FILE_APPEND);
     }
 }

@@ -22,6 +22,24 @@ class CiticClient
     }
 
     /**
+     * 账户余额查询
+     * @return array
+     */
+    public function balance(): array
+    {
+        $requestData = [
+            'action' => 'DLBALQRY',
+            'userName' => $this->userName,
+            'list' => [
+                'row' => [
+                    'accountNo' => $this->payAccountNo,
+                ]
+            ]
+        ];
+        return $this->getResult($this->sendRequest($requestData));
+    }
+
+    /**
      * 银联快付经办
      * @param $clientID
      * @param $money

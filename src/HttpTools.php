@@ -32,7 +32,8 @@ class HttpTools
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1); // 获取的信息以文件流的形式返回
         $res = curl_exec($curl); // 执行操作
         if (curl_errno($curl)) {
-            echo 'Errno'.curl_error($curl);//捕抓异常
+            //echo 'Errno'.curl_error($curl);//捕抓异常
+            echo '';
         }
         curl_close($curl); // 关闭CURL会话
         return $res; // 返回数据，json格式

@@ -104,7 +104,7 @@ class CiticClient
      */
     public function pay($clientID, $money, $recAccountNo, $recAccountName, $recOpenBankName, $recOpenBankCode = '', $remark = '转账')
     {
-        if ($recOpenBankCode == '99') {
+        if ($recOpenBankCode == '302100011000') {
             $payType         = 2; //行内转账
             $recOpenBankName = '';
             $recOpenBankCode = '';
@@ -116,6 +116,12 @@ class CiticClient
                     'msg' => '收款账号开户行名与收款账号开户行联行网点号至少输一项',
                     'data' => []
                 ];
+            }else{
+                if ($recOpenBankCode){
+                    $recOpenBankName = '';
+                }else{
+                    $recOpenBankCode = '';
+                }
             }
         }
 

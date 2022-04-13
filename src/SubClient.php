@@ -121,7 +121,7 @@ class SubClient extends CiticClient
      *     }
      * }
      */
-    public function DLSINSUB($clientID, $money, $fromAccNo, $toAccNo, $toAccName = ''): array
+    public function DLSINSUB($clientID, $money, $fromAccNo, $toAccNo, $toAccName): array
     {
         $requestData = [
             'action' => 'DLSINSUB',
@@ -303,7 +303,7 @@ class SubClient extends CiticClient
      *      }
      * }
      */
-    public function DLSUBDTL($subAccNo,$startDate = '',$endDate = '',$tranType = '',$minAmt = '',$maxAmt = ''): array
+    public function DLSUBDTL($subAccNo,$startDate,$endDate,$tranType = '',$minAmt = '',$maxAmt = ''): array
     {
         $requestData = [
             'action' => 'DLSUBDTL',

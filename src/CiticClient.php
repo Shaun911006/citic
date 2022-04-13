@@ -10,15 +10,17 @@ namespace citic;
 
 class CiticClient
 {
-    private string $userName; //用户名
-    private string $payAccountNo; //支付账号
-    private string $clientUrl; //客户端地址
+    protected string $userName; //用户名
+    protected string $payAccountNo; //支付账号
+    protected string $clientUrl; //客户端地址
+    protected string $selfSubAccNo; //客户端地址
 
     public function __construct($config = [])
     {
         $this->userName     = isset($config['userName']) ? $config['userName'] : '';
         $this->payAccountNo = isset($config['payAccountNo']) ? $config['payAccountNo'] : '';
         $this->clientUrl    = isset($config['clientUrl']) ? $config['clientUrl'] : '';
+        $this->selfSubAccNo    = isset($config['selfSubAccNo']) ? $config['selfSubAccNo'] : '';
     }
 
     /**
@@ -185,7 +187,7 @@ class CiticClient
         return $this->getResult($this->sendRequest($requestData));
     }
 
-    private function sendRequest($requestData)
+    protected function sendRequest($requestData)
     {
         self::log(json_encode($requestData, JSON_UNESCAPED_UNICODE), 1);
         $requestData = XmlTools::encode($requestData, 'GBK', true);
@@ -194,7 +196,7 @@ class CiticClient
         return XmlTools::decode($res);
     }
 
-    private function getResult($res)
+    protected function getResult($res)
     {
         self::log(json_encode($res, JSON_UNESCAPED_UNICODE), 2);
         return [

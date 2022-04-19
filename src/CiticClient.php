@@ -20,7 +20,7 @@ class CiticClient
         $this->userName     = isset($config['userName']) ? $config['userName'] : '';
         $this->payAccountNo = isset($config['payAccountNo']) ? $config['payAccountNo'] : '';
         $this->clientUrl    = isset($config['clientUrl']) ? $config['clientUrl'] : '';
-        $this->selfSubAccNo    = isset($config['selfSubAccNo']) ? $config['selfSubAccNo'] : '';
+        $this->selfSubAccNo = isset($config['selfSubAccNo']) ? $config['selfSubAccNo'] : '';
     }
 
     /**
@@ -58,7 +58,7 @@ class CiticClient
             'action' => 'DLUPRSUB',
             'userName' => $this->userName,
             'clientID' => $clientID,
-            'payAccountNo' => $this->payAccountNo,
+            'payAccountNo' => $this->selfSubAccNo ?: $this->payAccountNo, //如果配置了自有分簿账号，用自有分簿账号支付，否则用主账号支付
             'totalNumber' => 1,
             'totalAmount' => $money,
             'chkNum' => $clientID,

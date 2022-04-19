@@ -13,7 +13,7 @@ class CiticClient
     protected string $userName; //用户名
     protected string $payAccountNo; //支付账号
     protected string $clientUrl; //客户端地址
-    protected string $selfSubAccNo; //客户端地址
+    protected string $selfSubAccNo; //自有资金分簿号
 
     public function __construct($config = [])
     {

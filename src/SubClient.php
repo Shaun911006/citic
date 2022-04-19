@@ -27,6 +27,29 @@ class SubClient extends CiticClient
      * @param mixed $recOpenBankCode 联行号
      * @param mixed $remark 备注
      * @return array
+     * @example
+     * {
+     *     "res": true,
+     *     "msg": "交易成功",
+     *     "data": {
+     *         "errTotalAmt": "0.00",
+     *         "errTotalNum": "0",
+     *         "status": "AAAAAAA",
+     *         "statusText": "交易成功",
+     *         "sucTotalAmt": "99.98",
+     *         "sucTotalNum": "1",
+     *         "list": {
+     *             "@attributes": {
+     *                 "name": "userDataList"
+     *             },
+     *             "row": {
+     *                 "clientID": "11111111111111111112",
+     *                 "status": "AAAAAAE",
+     *                 "statusText": "已提交银行处理,请稍后使用交易状态查询交易进行查询"
+     *             }
+     *         }
+     *     }
+     * }
      */
     public function DLINTSUB($clientID, $money, $recAccountNo, $recAccountName, $recOpenBankName, $recOpenBankCode = '', $remark = '转账'): array
     {
@@ -88,8 +111,17 @@ class SubClient extends CiticClient
      * @param mixed $toAccNo 收款账号
      * @param mixed $toAccName 收款方账户名称
      * @return array
+     * @example
+     * {
+     *     "res": false,   //注：这里因为是AAAAAAE所以返回的是false,需要进去判断status字段
+     *     "msg": "已提交银行处理,请稍后使用交易状态查询交易进行查询",
+     *     "data": {
+     *         "status": "AAAAAAE",
+     *         "statusText": "已提交银行处理,请稍后使用交易状态查询交易进行查询"
+     *     }
+     * }
      */
-    public function DLSINSUB($clientID, $money, $fromAccNo, $toAccNo, $toAccName = ''): array
+    public function DLSINSUB($clientID, $money, $fromAccNo, $toAccNo, $toAccName): array
     {
         $requestData = [
             'action' => 'DLSINSUB',
@@ -112,6 +144,40 @@ class SubClient extends CiticClient
      *
      * @param mixed $subAccNo 资金分簿账号
      * @return array
+     *
+     * @example
+     * {
+     *     "res": true,
+     *     "msg": "交易成功",
+     *     "data": {
+     *          "status": "AAAAAAA",
+     *          "statusText": "交易成功",
+     *          "list": {
+     *              "@attributes": {
+     *                  "name": "userDataList"
+     *              },
+     *              "row": {
+     *                  "ACCBAL": "2400000.00",
+     *                  "CNTRATETYP": "0",
+     *                  "FEETYPE": [],
+     *                  "MAINACCNO": "8111301012200355684",
+     *                  "MAINCSTTYP": "1",
+     *                  "OVERAMT": "0.00",
+     *                  "OVERFLAG": "0",
+     *                  "OVERRATE": "0.0000000",
+     *                  "RATE": "0.0000000",
+     *                  "RATEASSIGNTYPE": "0",
+     *                  "SUBACCNM": "运宝宝货主资金分簿",
+     *                  "SUBACCTYP": "03",
+     *                  "SUBCSTNO": "001700358451",
+     *                  "TRANFEEFTYPE": "0",
+     *                  "XSTZFG": "1",
+     *                  "YESTERDAYBAL": "2400000.00",
+     *                  "subAccNo": "3111330023500000004"
+     *              }
+     *          }
+     *      }
+     * }
      */
     public function DLSUBINF($subAccNo): array
     {
@@ -130,6 +196,33 @@ class SubClient extends CiticClient
      *
      * @param mixed $subAccNo 资金分簿账号
      * @return array
+     *
+     * @example
+     * {
+     *     "res": true,
+     *     "msg": "交易成功",
+     *     "data": {
+     *          "status": "AAAAAAA",
+     *          "statusText": "交易成功",
+     *          "list": {
+     *              "@attributes": {
+     *                  "name": "userDataList"
+     *              },
+     *              "row": {
+     *                  "actBal": "2400000.00",
+     *                  "balance": "2400000.00",
+     *                  "cryType": "01",
+     *                  "frozenAmt": "0.00",
+     *                  "overAmt": "0.00",
+     *                  "status": "AAAAAAA",
+     *                  "statusText": "交易成功",
+     *                  "subAccNm": "运宝宝货主资金分簿",
+     *                  "subAccNo": "3111330023500000004",
+     *                  "yesterdayBal": "2400000.00"
+     *              }
+     *          }
+     *      }
+     * }
      */
     public function DLSUBBAL($subAccNo): array
     {
@@ -155,8 +248,62 @@ class SubClient extends CiticClient
      * @param mixed $minAmt 起始金额 两位小数
      * @param mixed $maxAmt 截止金额 两位小数
      * @return array
+     * @example
+     * {
+     *     "res": true,
+     *     "msg": "交易成功",
+     *     "data": {
+     *          "status": "AAAAAAA",
+     *          "statusText": "交易成功",
+     *          "list": {
+     *              "@attributes": {
+     *                  "name": "userDataList"
+     *              },
+     *              "row": [
+     *                  {
+     *                      "ACCBAL": "2000000.00",
+     *                      "CDFG": "C",
+     *                      "CRYTYPE": "01",
+     *                      "MEMO": "货款及工程款",
+     *                      "MIXNO": "2",
+     *                      "MNGNODE": "中信银行福州华林支行",
+     *                      "OPENACCNAME": "中信银行总行营业部",
+     *                      "OTHERACCNAME": "中信银行福州分行TSEA",
+     *                      "OTHERACCNO": "8110701012301247979",
+     *                      "TRANAMT": "2000000.00",
+     *                      "TRANDATE": "20220119",
+     *                      "TRANNO": "SC340000866282",
+     *                      "TRANTIME": "17:50:12",
+     *                      "TRANTYPE": "07",
+     *                      "VCNM": [],
+     *                      "VCTP": [],
+     *                      "subAccNo": "3111330023500000004"
+     *                  },
+     *                  {
+     *                      "ACCBAL": "2400000.00",
+     *                      "CDFG": "C",
+     *                      "CRYTYPE": "01",
+     *                      "MEMO": "货款及工程款",
+     *                      "MIXNO": "2",
+     *                      "MNGNODE": "中信银行福州华林支行",
+     *                      "OPENACCNAME": "中信银行总行营业部",
+     *                      "OTHERACCNAME": "中信银行福州分行TSEA",
+     *                      "OTHERACCNO": "8110701012301247979",
+     *                      "TRANAMT": "400000.00",
+     *                      "TRANDATE": "20220119",
+     *                      "TRANNO": "SC040000866287",
+     *                      "TRANTIME": "17:50:29",
+     *                      "TRANTYPE": "07",
+     *                      "VCNM": [],
+     *                      "VCTP": [],
+     *                      "subAccNo": "3111330023500000004"
+     *                  }
+     *              ]
+     *          }
+     *      }
+     * }
      */
-    public function DLSUBDTL($subAccNo,$startDate = '',$endDate = '',$tranType = '',$minAmt = '',$maxAmt = ''): array
+    public function DLSUBDTL($subAccNo,$startDate,$endDate,$tranType = '',$minAmt = '',$maxAmt = ''): array
     {
         $requestData = [
             'action' => 'DLSUBDTL',
@@ -197,6 +344,37 @@ class SubClient extends CiticClient
      * @param mixed $startDate 起始日期 格式 YYYYMMDD
      * @param mixed $endDate 截止日期 格式 YYYYMMDD
      * @return array
+     * @example
+     * {
+     *     "res": true,
+     *     "msg": "交易成功",
+     *     "data": {
+     *          "cryType": "01",
+     *          "mainAccNm": "福州单一银企直联测试",
+     *          "mainAccNo": "8111301012200355684",
+     *          "mngNode": "中信银行福州分行营业部",
+     *          "status": "AAAAAAA",
+     *          "statusText": "交易成功",
+     *          "subAccNm": "运宝宝自有资金分簿",
+     *          "subAccNo": "3111330023500000006",
+     *          "list": {
+     *              "@attributes": {
+     *                  "name": "userDataList"
+     *              },
+     *              "row": [
+     *                  {
+     *                      "balance": "1500000.00",
+     *                      "date": "20220130"
+     *                  },
+     *                  {
+     *                      "balance": "1500000.00",
+     *                      "date": "20220129"
+     *                  },
+     *                  ......
+     *              ]
+     *          }
+     *      }
+     * }
      */
     public function DLSUBBLH($subAccNo,$startDate = '',$endDate = ''): array
     {

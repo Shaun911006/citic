@@ -80,15 +80,16 @@ class CiticClient
     /**
      * 银联快付经办流水查询
      * @param $date
+     * @param $accountNo
      * @return array
      */
-    public function unionPayFlow($date)
+    public function unionPayFlow($date, $accountNo = '')
     {
         $requestData = [
             'action' => 'DLUPRDWN',
             'userName' => $this->userName,
             'checkDate' => $date,
-            'accountNo' => $this->payAccountNo,
+            'accountNo' => $accountNo?:$this->payAccountNo,
         ];
         return $this->getResult($this->sendRequest($requestData));
     }

@@ -8,6 +8,8 @@
 
 namespace citic;
 
+use citic\exception\CiticException;
+
 class CiticClient
 {
     protected string $userName; //用户名
@@ -17,28 +19,27 @@ class CiticClient
 
     public function __construct($config = [])
     {
-        $this->userName     = isset($config['userName']) ? $config['userName'] : '';
-        $this->payAccountNo = isset($config['payAccountNo']) ? $config['payAccountNo'] : '';
-        $this->clientUrl    = isset($config['clientUrl']) ? $config['clientUrl'] : '';
-        $this->selfSubAccNo = isset($config['selfSubAccNo']) ? $config['selfSubAccNo'] : '';
+        $this->userName     = $config['userName'] ?? '';
+        $this->payAccountNo = $config['payAccountNo'] ?? '';
+        $this->clientUrl    = $config['clientUrl'] ?? '';
+        $this->selfSubAccNo = $config['selfSubAccNo'] ?? '';
     }
 
     /**
      * 账户余额查询
      * @return array
+     * @throws CiticException
      */
     public function balance(): array
     {
         $requestData = [
-            'action' => 'DLBALQRY',
+            'action'   => 'DLBALQRY',
             'userName' => $this->userName,
-            'list' => [
-                'row' => [
-                    'accountNo' => $this->payAccountNo,
-                ]
-            ]
+            'list'     => new ListData('userDataList', [['accountNo' => $this->payAccountNo]])
         ];
-        return $this->getResult($this->sendRequest($requestData));
+
+        $res = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -47,51 +48,55 @@ class CiticClient
      * @param $money
      * @param $recAccountNo
      * @param $recAccountName
-     * @param $remark
-     * @param $recBankCode
+     * @param string $remark
+     * @param string $recBankCode
      * @return array
+     * @throws CiticException
      */
-    public function payByUnionPay($clientID, $money, $recAccountNo, $recAccountName, $remark = '转账', $recBankCode = '')
+    public function payByUnionPay($clientID, $money, $recAccountNo, $recAccountName, string $remark = '转账', string $recBankCode = ''): array
     {
         $remark      = $remark === '' ? '转账' : $remark;
         $requestData = [
-            'action' => 'DLUPRSUB',
-            'userName' => $this->userName,
-            'clientID' => $clientID,
+            'action'       => 'DLUPRSUB',
+            'userName'     => $this->userName,
+            'clientID'     => $clientID,
             'payAccountNo' => $this->selfSubAccNo ?: $this->payAccountNo, //如果配置了自有分簿账号，用自有分簿账号支付，否则用主账号支付
-            'totalNumber' => 1,
-            'totalAmount' => $money,
-            'chkNum' => $clientID,
-            'abstract' => $remark,
-            'list' => [
-                'row' => [
-                    'ID' => '99999',
-                    'recAccountNo' => $recAccountNo,
+            'totalNumber'  => 1,
+            'totalAmount'  => $money,
+            'chkNum'       => $clientID,
+            'abstract'     => $remark,
+            'list'         => new ListData('userDataList', [
+                [
+                    'ID'             => '99999',
+                    'recAccountNo'   => $recAccountNo,
                     'recAccountName' => $recAccountName,
-                    'recBankCode' => $recBankCode,
-                    'tranAmount' => $money,
-                    'abstract' => $remark,
+                    'recBankCode'    => $recBankCode,
+                    'tranAmount'     => $money,
+                    'abstract'       => $remark,
                 ]
-            ]
+            ])
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
      * 银联快付经办流水查询
      * @param $date
-     * @param $accountNo
+     * @param string $accountNo
      * @return array
+     * @throws CiticException
      */
-    public function unionPayFlow($date, $accountNo = '')
+    public function unionPayFlow($date, string $accountNo = ''): array
     {
         $requestData = [
-            'action' => 'DLUPRDWN',
-            'userName' => $this->userName,
+            'action'    => 'DLUPRDWN',
+            'userName'  => $this->userName,
             'checkDate' => $date,
-            'accountNo' => $accountNo?:$this->payAccountNo,
+            'accountNo' => $accountNo ?: $this->payAccountNo,
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -104,8 +109,9 @@ class CiticClient
      * @param string $recOpenBankCode
      * @param string $remark
      * @return array
+     * @throws CiticException
      */
-    public function pay($clientID, $money, $recAccountNo, $recAccountName, $recOpenBankName, $recOpenBankCode = '', $remark = '转账')
+    public function pay($clientID, $money, $recAccountNo, $recAccountName, $recOpenBankName, string $recOpenBankCode = '', string $remark = '转账'): array
     {
         if ($recOpenBankCode == '302100011000') {
             $payType         = 2; //行内转账
@@ -115,14 +121,14 @@ class CiticClient
             $payType = 1; //跨行转账
             if ($recOpenBankName == '' && $recOpenBankCode == '') {
                 return [
-                    'res' => false,
-                    'msg' => '收款账号开户行名与收款账号开户行联行网点号至少输一项',
+                    'res'  => false,
+                    'msg'  => '收款账号开户行名与收款账号开户行联行网点号至少输一项',
                     'data' => []
                 ];
-            }else{
-                if ($recOpenBankCode){
+            } else {
+                if ($recOpenBankCode) {
                     $recOpenBankName = '';
-                }else{
+                } else {
                     $recOpenBankCode = '';
                 }
             }
@@ -130,85 +136,134 @@ class CiticClient
 
         $remark      = $remark === '' ? '转账' : $remark;
         $requestData = [
-            'action' => 'DLINTTRN',
+            'action'   => 'DLINTTRN',
             'userName' => $this->userName,
-            'list' => [
-                'row' => [
-                    'clientID' => $clientID,
-                    'preFlg' => 0,
-                    'preDate' => '',
-                    'preTime' => '',
-                    'payType' => $payType,
-                    'payFlg' => 1,
-                    'payAccountNo' => $this->payAccountNo,
-                    'recAccountNo' => $recAccountNo,
-                    'recAccountName' => $recAccountName,
+            'list'     => new ListData('userDataList',[
+                [
+                    'clientID'        => $clientID,
+                    'preFlg'          => 0,
+                    'preDate'         => '',
+                    'preTime'         => '',
+                    'payType'         => $payType,
+                    'payFlg'          => 1,
+                    'payAccountNo'    => $this->payAccountNo,
+                    'recAccountNo'    => $recAccountNo,
+                    'recAccountName'  => $recAccountName,
                     'recOpenBankName' => $recOpenBankName,
                     'recOpenBankCode' => $recOpenBankCode,
-                    'tranAmount' => $money,
-                    'abstract' => $remark,
-                    'memo' => $remark,
-                    'chkNum' => $clientID,
+                    'tranAmount'      => $money,
+                    'abstract'        => $remark,
+                    'memo'            => $remark,
+                    'chkNum'          => $clientID,
                 ]
-            ]
+            ])
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
      * 银联快付明细查询
      * @param $clientID
      * @return array
+     * @throws CiticException
      */
-    public function queryByUnionPay($clientID)
+    public function queryByUnionPay($clientID): array
     {
         $requestData = [
-            'action' => 'DLUPRDET',
-            'userName' => $this->userName,
-            'clientID' => $clientID,
-            'stt' => '',
+            'action'      => 'DLUPRDET',
+            'userName'    => $this->userName,
+            'clientID'    => $clientID,
+            'stt'         => '',
             'controlFlag' => 1
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
      * 银联快付明细查询
      * @param $clientID
      * @return array
+     * @throws CiticException
      */
     public function query($clientID)
     {
         $requestData = [
-            'action' => 'DLCIDSTT',
+            'action'   => 'DLCIDSTT',
             'userName' => $this->userName,
             'clientID' => $clientID,
-            'type' => '',
+            'type'     => '',
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
-    protected function sendRequest($requestData)
+    /**
+     * 发送请求
+     * step1:报文转成xml字符串
+     * step2:将utf8转成gbk
+     * step3:curl发送post请求
+     * step4:响应结果xml转成json字符串
+     * step5:json字符串Gbk转utf8
+     * step6:json字符串转数组
+     * @param array $requestArr
+     * @return mixed|string
+     * @throws CiticException
+     */
+    protected function sendRequest(array $requestArr)
     {
-        self::log(json_encode($requestData, JSON_UNESCAPED_UNICODE), 1);
-        $requestData = XmlTools::encode($requestData, 'GBK', true);
-        $requestData = CharsetTools::utf8ToGbk($requestData);
-        $res         = HttpTools::post_curls($this->clientUrl, $requestData);
-        return XmlTools::decode($res);
+        $num = rand(1000, 9999);
+        self::log($num, $requestArr, 1);
+        //step1:报文转成xml字符串
+        $requestXml = XmlTools::encode($requestArr, 'GBK', true);
+        //step2:将utf8转成gbk
+        $requestXml = CharsetTools::utf8ToGbk($requestXml);
+        //step3:curl发送post请求
+        $responseXmlGbk = HttpTools::post_curls($this->clientUrl, $requestXml);
+        if (!$responseXmlGbk) {
+            throw new CiticException('CURL响应结果为空');
+        }
+        //step4:响应结果xml(Gbk)转成json字符串(Gbk)
+        $responseJsonGbk = XmlTools::decode($responseXmlGbk);
+        //step5:json字符串Gbk转utf8
+        $responseJson = CharsetTools::gbkToUtf8($responseJsonGbk);
+        //step6:json字符串转数组
+        $responseArr = json_decode($responseJson, true);
+        self::log($num, $responseArr, 2);
+        return $responseArr;
     }
 
-    protected function getResult($res)
+    protected function getResult($res): array
     {
-        self::log(json_encode($res, JSON_UNESCAPED_UNICODE), 2);
         return [
-            'res' => (isset($res['status']) && $res['status'] === 'AAAAAAA') ? true : false,
-            'msg' => isset($res['statusText']) ? $res['statusText'] : '',
+            'res'  => isset($res['status']) && $res['status'] === 'AAAAAAA',
+            'msg'  => $res['statusText'] ?? '',
             'data' => $res
         ];
     }
 
-    public static function log($content, $type = 1)
+    /**
+     * 记录日志
+     * @param string $num 请求的编号
+     * @param mixed $content 记录内容
+     * @param int $type 内容类型 1.请求 2.响应
+     * @return void
+     */
+    public static function log(string $num = '1000', $content = '', int $type = 1)
     {
-        file_put_contents('./citic' . $type . '.log', '[' . date('Ymd-His') . ']' . $content . PHP_EOL, FILE_APPEND);
+        $dir1 = 'citic_log';
+        if (!is_dir($dir1)) {
+            mkdir($dir1, 0777, true);
+        }
+        $dir2 = $dir1 . DIRECTORY_SEPARATOR . date('Y-m');
+        if (!is_dir($dir2)) {
+            mkdir($dir2, 0777, true);
+        }
+        $file = $dir2 . DIRECTORY_SEPARATOR . date('d') . '.log';
+
+        $logStr = '[' . date('H:i:s') . ']  (' . $num . ')  ' . ($type === 1 ? 'Request' : ($type === 2 ? 'Response' : '')) . '   >>>>>>' . PHP_EOL .
+            var_export($content, true) . PHP_EOL;
+        file_put_contents($file, $logStr . PHP_EOL, FILE_APPEND);
     }
 }

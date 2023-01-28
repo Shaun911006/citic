@@ -17,7 +17,7 @@ class XmlTools
      * @param bool $root 根节点名
      * @return string
      */
-    public static function encode($data, $encoding = 'utf-8', $root = false)
+    public static function encode($data, string $encoding = 'utf-8', bool $root = false): string
     {
         if ($root) {
             $xml = '<?xml version="1.0" encoding="' . $encoding . '"?><stream>';
@@ -36,39 +36,46 @@ class XmlTools
      * @param array $data
      * @return string
      */
-    private static function data_to_xml($data)
+    private static function data_to_xml(array $data): string
     {
         $xml = '';
         foreach ($data as $key => $val) {
-            if ($key === "list") {
-                $xml .= "<$key name='userDataList'>";
-            } else if (is_numeric($key)) {
-                $xml .= "";
+            if (is_array($val)) {
+                $xml .= '<' . $key . '>' . self::data_to_xml($val) . '</' . $key . '>';
+            } elseif ($val instanceof ListData) {
+                $xml .= $val->getListXmlWithRow();
             } else {
-                $xml .= "<$key>";
+                $xml .= '<' . $key . '>' . $val . '</' . $key . '>';
             }
-            $xml .= (is_array($val) || is_object($val)) ? self::data_to_xml($val) : $val;
-            list($key,) = explode(' ', $key);
-            if (is_numeric($key)) {
-                $xml .= "";
-            } else {
-                $xml .= "</$key>";
-            }
-
         }
         return $xml;
     }
 
-    //Xml转数组
-    public static function decode($xml)
+    /**
+     * list转xml
+     * @param array $list
+     * @return string
+     */
+    public static function list_to_xml(array $list): string
+    {
+        $xml = '';
+        foreach ($list as $row) {
+            $xml .= '<row>';
+            $xml .= self::data_to_xml($row);
+            $xml .= '</row>';
+        }
+        return $xml;
+    }
+
+    /**
+     * xml转json字符串
+     * @param $xml
+     * @return string
+     */
+    public static function decode($xml) :string
     {
         if ($xml == '') return '';
         libxml_disable_entity_loader(true);
-        $jsonStr = json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA));
-        //转码
-        $jsonStr = CharsetTools::gbkToUtf8($jsonStr);
-        return json_decode($jsonStr, true);
+        return json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA), JSON_UNESCAPED_UNICODE);
     }
-
-
 }

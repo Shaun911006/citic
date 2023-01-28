@@ -4,7 +4,10 @@
  * Date:2022/4/13
  * Description:资金分簿
  */
+
 namespace citic;
+
+use citic\exception\CiticException;
 
 class SubClient extends CiticClient
 {
@@ -27,6 +30,7 @@ class SubClient extends CiticClient
      * @param mixed $recOpenBankCode 联行号
      * @param mixed $remark 备注
      * @return array
+     * @throws CiticException
      * @example
      * {
      *     "res": true,
@@ -61,42 +65,43 @@ class SubClient extends CiticClient
             $payType = 1; //跨行转账
             if ($recOpenBankName == '' && $recOpenBankCode == '') {
                 return [
-                    'res' => false,
-                    'msg' => '收款账号开户行名与收款账号开户行联行网点号至少输一项',
+                    'res'  => false,
+                    'msg'  => '收款账号开户行名与收款账号开户行联行网点号至少输一项',
                     'data' => []
                 ];
-            }else{
-                if ($recOpenBankCode){
+            } else {
+                if ($recOpenBankCode) {
                     $recOpenBankName = '';
-                }else{
+                } else {
                     $recOpenBankCode = '';
                 }
             }
         }
 
         $requestData = [
-            'action' => 'DLINTSUB',
+            'action'   => 'DLINTSUB',
             'userName' => $this->userName,
-            'list' => [
-                'row' => [
-                    'clientID' => $clientID,
-                    'preFlg' => 0,
-                    'preDate' => '',
-                    'preTime' => '',
-                    'payType' => $payType,
-                    'payFlg' => 1,
-                    'mainAccNo' => $this->payAccountNo,
-                    'payAccountNo' => $this->selfSubAccNo,
-                    'recAccountNo' => $recAccountNo,
-                    'recAccountName' => $recAccountName,
+            'list'     => new ListData('userDataList', [
+                [
+                    'clientID'        => $clientID,
+                    'preFlg'          => 0,
+                    'preDate'         => '',
+                    'preTime'         => '',
+                    'payType'         => $payType,
+                    'payFlg'          => 1,
+                    'mainAccNo'       => $this->payAccountNo,
+                    'payAccountNo'    => $this->selfSubAccNo,
+                    'recAccountNo'    => $recAccountNo,
+                    'recAccountName'  => $recAccountName,
                     'recOpenBankName' => $recOpenBankName,
                     'recOpenBankCode' => $recOpenBankCode,
-                    'tranAmount' => $money,
-                    'abstract' => $remark,
+                    'tranAmount'      => $money,
+                    'abstract'        => $remark,
                 ]
-            ]
+            ])
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res         = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -111,6 +116,7 @@ class SubClient extends CiticClient
      * @param mixed $toAccNo 收款账号
      * @param mixed $toAccName 收款方账户名称
      * @return array
+     * @throws CiticException
      * @example
      * {
      *     "res": false,   //注：这里因为是AAAAAAE所以返回的是false,需要进去判断status字段
@@ -124,18 +130,19 @@ class SubClient extends CiticClient
     public function DLSINSUB($clientID, $money, $fromAccNo, $toAccNo, $toAccName): array
     {
         $requestData = [
-            'action' => 'DLSINSUB',
-            'userName' => $this->userName,
-            'clientID' => $clientID,
+            'action'    => 'DLSINSUB',
+            'userName'  => $this->userName,
+            'clientID'  => $clientID,
             'mainAccNo' => $this->payAccountNo,
-            'payAccNo' => $fromAccNo,
+            'payAccNo'  => $fromAccNo,
             'recvAccNo' => $toAccNo,
             'recvAccNm' => $toAccName,
-            'tranAmt' => $money,
-            'preFlg' => 0,
-            'preTime' => ''
+            'tranAmt'   => $money,
+            'preFlg'    => 0,
+            'preTime'   => ''
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res         = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -145,6 +152,7 @@ class SubClient extends CiticClient
      * @param mixed $subAccNo 资金分簿账号
      * @return array
      *
+     * @throws CiticException
      * @example
      * {
      *     "res": true,
@@ -182,11 +190,12 @@ class SubClient extends CiticClient
     public function DLSUBINF($subAccNo): array
     {
         $requestData = [
-            'action' => 'DLSUBINF',
+            'action'   => 'DLSUBINF',
             'userName' => $this->userName,
             'subAccNo' => $subAccNo,
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res         = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -197,6 +206,7 @@ class SubClient extends CiticClient
      * @param mixed $subAccNo 资金分簿账号
      * @return array
      *
+     * @throws CiticException
      * @example
      * {
      *     "res": true,
@@ -227,11 +237,12 @@ class SubClient extends CiticClient
     public function DLSUBBAL($subAccNo): array
     {
         $requestData = [
-            'action' => 'DLSUBBAL',
+            'action'   => 'DLSUBBAL',
             'userName' => $this->userName,
             'subAccNo' => $subAccNo,
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res         = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -248,6 +259,7 @@ class SubClient extends CiticClient
      * @param mixed $minAmt 起始金额 两位小数
      * @param mixed $maxAmt 截止金额 两位小数
      * @return array
+     * @throws CiticException
      * @example
      * {
      *     "res": true,
@@ -259,7 +271,7 @@ class SubClient extends CiticClient
      *              "@attributes": {
      *                  "name": "userDataList"
      *              },
-     *              "row": [
+     *              "row": [  //需要注意 row 如果只有一个元素 直接以对象的形式存在，而非二维数组
      *                  {
      *                      "ACCBAL": "2000000.00",
      *                      "CDFG": "C",
@@ -303,20 +315,21 @@ class SubClient extends CiticClient
      *      }
      * }
      */
-    public function DLSUBDTL($subAccNo,$startDate,$endDate,$tranType = '',$minAmt = '',$maxAmt = ''): array
+    public function DLSUBDTL($subAccNo, $startDate, $endDate, $tranType = '', $minAmt = '', $maxAmt = ''): array
     {
         $requestData = [
-            'action' => 'DLSUBDTL',
-            'userName' => $this->userName,
-            'subAccNo' => $subAccNo,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-            'tranType' => $tranType,
-            'minAmt' => $minAmt,
-            'maxAmt' => $maxAmt,
+            'action'      => 'DLSUBDTL',
+            'userName'    => $this->userName,
+            'subAccNo'    => $subAccNo,
+            'startDate'   => $startDate,
+            'endDate'     => $endDate,
+            'tranType'    => $tranType,
+            'minAmt'      => $minAmt,
+            'maxAmt'      => $maxAmt,
             'controlFlag' => 1,
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res         = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -329,11 +342,12 @@ class SubClient extends CiticClient
     public function DLRELPRY($subAccNo): array
     {
         $requestData = [
-            'action' => 'DLRELPRY',
+            'action'   => 'DLRELPRY',
             'userName' => $this->userName,
             'subAccNo' => $subAccNo,
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res         = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 
     /**
@@ -344,6 +358,7 @@ class SubClient extends CiticClient
      * @param mixed $startDate 起始日期 格式 YYYYMMDD
      * @param mixed $endDate 截止日期 格式 YYYYMMDD
      * @return array
+     * @throws CiticException
      * @example
      * {
      *     "res": true,
@@ -376,15 +391,16 @@ class SubClient extends CiticClient
      *      }
      * }
      */
-    public function DLSUBBLH($subAccNo,$startDate = '',$endDate = ''): array
+    public function DLSUBBLH($subAccNo, $startDate = '', $endDate = ''): array
     {
         $requestData = [
-            'action' => 'DLSUBBLH',
-            'userName' => $this->userName,
-            'subAccNo' => $subAccNo,
+            'action'    => 'DLSUBBLH',
+            'userName'  => $this->userName,
+            'subAccNo'  => $subAccNo,
             'startDate' => $startDate,
-            'endDate' => $endDate,
+            'endDate'   => $endDate,
         ];
-        return $this->getResult($this->sendRequest($requestData));
+        $res         = $this->sendRequest($requestData);
+        return $this->getResult($res);
     }
 }

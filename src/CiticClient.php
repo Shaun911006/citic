@@ -17,12 +17,15 @@ class CiticClient
     protected string $clientUrl; //客户端地址
     protected string $selfSubAccNo; //自有资金分簿号
 
+    protected string $logFPath; //日志目录
+
     public function __construct($config = [])
     {
         $this->userName     = $config['userName'] ?? '';
         $this->payAccountNo = $config['payAccountNo'] ?? '';
         $this->clientUrl    = $config['clientUrl'] ?? '';
         $this->selfSubAccNo = $config['selfSubAccNo'] ?? '';
+        $this->logFPath     = $config['logFPath'] ?? '';
     }
 
     /**
@@ -76,7 +79,7 @@ class CiticClient
                 ]
             ])
         ];
-        $res = $this->sendRequest($requestData);
+        $res         = $this->sendRequest($requestData);
         return $this->getResult($res);
     }
 
@@ -95,7 +98,7 @@ class CiticClient
             'checkDate' => $date,
             'accountNo' => $accountNo ?: $this->payAccountNo,
         ];
-        $res = $this->sendRequest($requestData);
+        $res         = $this->sendRequest($requestData);
         return $this->getResult($res);
     }
 
@@ -138,7 +141,7 @@ class CiticClient
         $requestData = [
             'action'   => 'DLINTTRN',
             'userName' => $this->userName,
-            'list'     => new ListData('userDataList',[
+            'list'     => new ListData('userDataList', [
                 [
                     'clientID'        => $clientID,
                     'preFlg'          => 0,
@@ -158,7 +161,7 @@ class CiticClient
                 ]
             ])
         ];
-        $res = $this->sendRequest($requestData);
+        $res         = $this->sendRequest($requestData);
         return $this->getResult($res);
     }
 
@@ -177,7 +180,7 @@ class CiticClient
             'stt'         => '',
             'controlFlag' => 1
         ];
-        $res = $this->sendRequest($requestData);
+        $res         = $this->sendRequest($requestData);
         return $this->getResult($res);
     }
 
@@ -195,7 +198,7 @@ class CiticClient
             'clientID' => $clientID,
             'type'     => '',
         ];
-        $res = $this->sendRequest($requestData);
+        $res         = $this->sendRequest($requestData);
         return $this->getResult($res);
     }
 
@@ -214,7 +217,7 @@ class CiticClient
     protected function sendRequest(array $requestArr)
     {
         $num = rand(1000, 9999);
-        self::log($num, $requestArr, 1);
+        $this->log($num, $requestArr, 1);
         //step1:报文转成xml字符串
         $requestXml = XmlTools::encode($requestArr, 'GBK', true);
         //step2:将utf8转成gbk
@@ -230,7 +233,7 @@ class CiticClient
         $responseJson = CharsetTools::gbkToUtf8($responseJsonGbk);
         //step6:json字符串转数组
         $responseArr = json_decode($responseJson, true);
-        self::log($num, $responseArr, 2);
+        $this->log($num, $responseArr, 2);
         return $responseArr;
     }
 
@@ -250,20 +253,24 @@ class CiticClient
      * @param int $type 内容类型 1.请求 2.响应
      * @return void
      */
-    public static function log(string $num = '1000', $content = '', int $type = 1)
+    public function log(string $num = '1000', $content = '', int $type = 1)
     {
-        $dir1 = 'citic_log';
-        if (!is_dir($dir1)) {
-            mkdir($dir1, 0777, true);
-        }
-        $dir2 = $dir1 . DIRECTORY_SEPARATOR . date('Y-m');
-        if (!is_dir($dir2)) {
-            mkdir($dir2, 0777, true);
-        }
-        $file = $dir2 . DIRECTORY_SEPARATOR . date('d') . '.log';
+        try {
+            $dir1 = $this->logFPath . 'citic_log';
+            if (!is_dir($dir1)) {
+                mkdir($dir1, 0777, true);
+            }
+            $dir2 = $dir1 . DIRECTORY_SEPARATOR . date('Y-m');
+            if (!is_dir($dir2)) {
+                mkdir($dir2, 0777, true);
+            }
+            $file = $dir2 . DIRECTORY_SEPARATOR . date('d') . '.log';
 
-        $logStr = '[' . date('H:i:s') . ']  (' . $num . ')  ' . ($type === 1 ? 'Request' : ($type === 2 ? 'Response' : '')) . '   >>>>>>' . PHP_EOL .
-            var_export($content, true) . PHP_EOL;
-        file_put_contents($file, $logStr . PHP_EOL, FILE_APPEND);
+            $logStr = '[' . date('H:i:s') . ']  (' . $num . ')  ' . ($type === 1 ? 'Request' : ($type === 2 ? 'Response' : '')) . '   >>>>>>' . PHP_EOL .
+                var_export($content, true) . PHP_EOL;
+            file_put_contents($file, $logStr . PHP_EOL, FILE_APPEND);
+        }catch (\Exception $e){
+
+        }
     }
 }
